@@ -1,9 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Oct  30 13:45:28 2017
+
+@author: charlotteviner
+"""
+
 import random
 
 
 class Agent():
     """
     Set up and provide methods for agents.
+    
+    Set up agent coordinates and provide methods to allow the agents
+    to interact with the environment and with each other. Implement
+    property attributes for the x and y coordinates.
     
     __init__ -- Set up agent coordinates.
     getx -- Get the x-coordinate of an agent.
@@ -45,9 +57,14 @@ class Agent():
         else:
             self._y = y
             # Otherwise, assign it the value from the web data.
-            
+          
+        # Allow agents to access environment data.
         self.environment = environment
+        
+        # Allow agents to access other agent positions.
         self.agents = agents
+        
+        # Set default agent store to zero.
         self.store = 0
     
     
@@ -72,6 +89,7 @@ class Agent():
         Args:
             value -- An integer.
         """
+        
         self._x = value
       
         
@@ -109,21 +127,39 @@ class Agent():
     
     
     def move(self):
-        """Move the agents."""
+        """
+        Move the agents.
+        
+        Move the agents by randomly increasing or decreasing the x and y
+        coordinates by 1, moving the agents around a torus so they
+        never move out of the frame.
+        
+        Returns:
+            y (int) -- New y-coordinate.
+            x (int) -- New x-coordinate.
+        """
         
         if random.random() < 0.5:
             self._y = (self._y + 1) % 100
+            
         else:
             self._y = (self._y - 1) % 100
+            
         if random.random() < 0.5:
             self._x = (self._x + 1) % 100
+            
         else:
             self._x = (self._x - 1) % 100
       
         
         
     def eat(self):
-        """Tell agent to eat the environment."""
+        """
+        Tell agent to eat the environment.
+        
+        Tell the agents to eat 10 units of the environment if there are
+        more than 10 units available at their location.
+        """
         
         if self.environment[self._y][self._x] > 10:
             self.environment[self._y][self._x] -= 10
@@ -150,6 +186,9 @@ class Agent():
         """
         Tell agents to share food with other nearby agents.
         
+        Tell the agents to share food if another agent is of a distance
+        less than the neighbourhood parameter.
+        
         Args:
             neighbourhood (int) -- Distance to define 'nearby'.
         """
@@ -157,6 +196,7 @@ class Agent():
         for agent in self.agents:
             # Calculate distance between the two agents.
             distance = self.distance_between(agent)
+            
             if distance <= neighbourhood:
                 sum = self.store + agent.store
                 average = sum / 2
@@ -164,11 +204,12 @@ class Agent():
                 agent.store = average
 
 
+
     def __str__(self):
         """
         Cast an agent store to a string.
         
-        Overrides the default __str__() function in the class.
+        Override the default __str__() function in the class.
         
         Returns:
             An agent's store as a string.

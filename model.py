@@ -7,10 +7,10 @@ Created on Mon Oct  9 12:14:36 2017
 
 Create agents and provide methods to interact with the environment.
 
-Builds agents in a space and gets them to interact with each other.
-Reads in environmental data and gets the agents to interact with the
-environment by moving and eating. Displays the model as an animation
-contained within a GUI. Provides the option of getting data by web
+Build agents in a space and get them to interact with each other.
+Read in environmental data and get the agents to interact with the
+environment by moving and eating. Display the model as an animation
+contained within a GUI. Provide the option of getting data by web
 scraping or by parameter sweeping.
 
 Args:
@@ -23,7 +23,7 @@ Args:
 Returns:
     total (float) -- Total amount eaten by all the agents.
     store (.csv) -- File containing all totals.
-    animation -- Animates the model in matplotlib.
+    animation -- Animates the model.
     sweep_results (.csv) -- File containing sweeper outputs.
     environment (.txt) -- File containing data for the eaten
         environment.
@@ -54,11 +54,11 @@ agents = []
 environment = []
 
 
-max_store = 20000 # Maximum number of units an agent can eat.
+max_store = 20000 # Set the maximum number of units an agent can eat.
 
 
 
-if len(sys.argv) == 1: # Only runs if web data is being used.
+if len(sys.argv) == 1: # Only run if web data is being used.
     td_ys = None
     td_xs = None
     # Request data from a website (web scraping).
@@ -84,7 +84,7 @@ else:
 
 
 
-# Set up the figure.
+# Set up the figure for later use in the animation.
 fig = matplotlib.pyplot.figure(figsize = (7, 7))
 ax = fig.add_axes([0, 0, 1, 1]) # Add axes.
 
@@ -92,7 +92,7 @@ ax = fig.add_axes([0, 0, 1, 1]) # Add axes.
 
 # Read in environment data from text file.
 f = open('in.txt', newline='')
-reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
+reader = csv.reader(f, quoting = csv.QUOTE_NONNUMERIC)
 for row in reader:
     rowlist = []
     for item in row:
@@ -123,8 +123,14 @@ def update(frame_number):
     """
     Move agents and create frames for use in animation using web data.
     
+    Move the agents and get them to interact with the environment.
+    Calculate the total amount eaten by all agents and appends this
+    amount to a .csv file. Provide a stopping condition for the model.
+    Create frames for use in the animation when the web data is being
+    used.
+    
     Args:
-        frame_number (int) -- number of each frame generated.
+        frame_number (int) -- Number of each frame generated.
         
     Returns:
         Scatter plot of agents in the environment for each iteration.
@@ -136,8 +142,8 @@ def update(frame_number):
     global carry_on
     
     for j in range(num_of_steps):
-        random.shuffle(agents)
         # Randomise order in which the agents are processed each step.
+        random.shuffle(agents)
         for agent in agents:
             agent.move() # Agents move.
             agent.eat() # Agents eat the environment.
@@ -153,9 +159,11 @@ def update(frame_number):
     if agent.store >= max_store:
         carry_on = False
         print("Stopping condition met.\nTotal store = ", total)
-        # Append total store to file 'store.csv'.
-        with open('store.csv', 'a') as f3:
-            f3.write(str(total) + "\n")
+        # Append total store and parameters to file 'store.csv'.
+        with open('store.csv', 'a') as f1:
+            f1.write(str(total) + "," + str(num_of_agents) + "," + 
+                     str(num_of_steps) + "," + str(neighbourhood) + 
+                     "\n")
 
     matplotlib.pyplot.ylim(0, 99) # Set limit of y axis.
     matplotlib.pyplot.xlim(0, 99) # Set limit of x axis.
@@ -163,16 +171,28 @@ def update(frame_number):
 
     for agent in agents:
         # Plot all agents on a scatter graph.
-        matplotlib.pyplot.scatter(agent.y, agent.x)
+        matplotlib.pyplot.scatter(agent.x, agent.y)
+    
+    # Write a new text file containing data for the eaten environment.
+    f2 = open('environment.txt', 'w', newline='') 
+    writer = csv.writer(f2, delimiter=' ')
+    for row in environment:		
+        writer.writerow(row)
+    f2.close()
 
 
 
 def no_gui():
-    """Move agents using data from the sweeper."""
+    """
+    Move agents using data from the sweeper.
+    
+    Move the agents and get them to interact with the environment using
+    the parameter sweeper.
+    """
     
     for j in range(num_of_steps):
-        random.shuffle(agents)
         # Randomise order in which the agents are processed each step.
+        random.shuffle(agents)
         for agent in agents:
             agent.move() # Agents move.
             agent.eat() # Agents eat the environment.
@@ -182,12 +202,18 @@ def no_gui():
     
     
 def gen_function(b = [0]):
-    """Stop creating frames when stopping condition is met."""
+    """
+    Stop creating frames when stopping condition is met.
+    
+    Generator function that determines when frames should stop being
+    created by checking whether the maximum number of iterations and/or
+    the stopping condition has been met.
+    """
     
     a = 0
     global carry_on
-    while (a < max_store) & (carry_on) :
-        yield a # Returns control and waits next call.
+    while (a < num_of_steps) & (carry_on) :
+        yield a # Return control and wait next call.
         a = a + 1
     
 
@@ -195,6 +221,9 @@ def gen_function(b = [0]):
 def run():
     """
     Run the animation.
+    
+    Run the animation, using the generator function, to determine the
+    number of frames.
     
     Returns:
         animation -- Animates the model.
@@ -234,15 +263,7 @@ else:
     for agent in agents:
         total += agent.store # Add to the total each time an agent eats.
     
-    # Append total and number of agents to file 'store2.csv'.   
-    with open('sweep_results.csv', 'a') as f4:
-        f4.write(str(total) + "," + sys.argv[1] + "\n")
-        
-    
-    
-# Write a new text file containing data for the eaten environment.
-f2 = open('environment.txt', 'w', newline='') 
-writer = csv.writer(f2, delimiter=' ')
-for row in environment:		
-	writer.writerow(row)
-f2.close()
+    # Append total and parameters used to file 'sweep_results.csv'.   
+    with open('sweep_results.csv', 'a') as f3:
+        f3.write(str(total) + "," + sys.argv[1] + "," + sys.argv[2] + 
+                 "," + sys.argv[3] + "\n")
