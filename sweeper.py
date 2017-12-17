@@ -49,7 +49,7 @@ num_of_steps = 20
 neighbourhood = 30
 
 
-print("Sweeper initiated.")
+print("Parameter sweeper initiated.")
 
 
 for i in range(interval):
@@ -61,7 +61,7 @@ for i in range(interval):
     print("Running the model with " + str(num_of_agents) + " agents.")
    
     
-print("Sweeper complete.")
+print("Parameter sweeper complete.")
 
 
 end = getTimeS() # Get the time when the sweeper is complete.
