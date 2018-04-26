@@ -1,5 +1,6 @@
 # practicalportfolio
-Portfolio of practical work
+
+## Core Skills Practical Portfolio: Agent-Based Model
 
 During the practicals on this module, I created an agent-based model that:
 * builds agents in space;
